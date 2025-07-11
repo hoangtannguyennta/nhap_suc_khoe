@@ -1,29 +1,27 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Bảng Thẩm Định Chỉ Số Giảm Cân</title>
+  <meta charset="UTF-8" />
+  <title>Thẩm Định Chỉ Số</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f2f2f2;
+      background: #f9f9f9;
       padding: 40px;
-      color: #333;
+    }
+
+    .form-container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
     h2 {
       text-align: center;
       color: #007BFF;
-      margin-bottom: 30px;
-    }
-
-    .form-container {
-      max-width: 500px;
-      margin: 0 auto;
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
     .form-group {
@@ -31,70 +29,115 @@
     }
 
     label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
+      font-weight: bold;
     }
 
     input[type="number"] {
       width: 100%;
       padding: 10px;
-      border: 1px solid #ccc;
       border-radius: 8px;
-      font-size: 16px;
-      box-sizing: border-box;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+      font-size: 15px;
     }
 
     button {
       width: 100%;
       padding: 12px;
-      background-color: #007BFF;
+      margin-top: 20px;
+      font-size: 16px;
+      background: #28a745;
       color: white;
       border: none;
-      font-size: 16px;
-      font-weight: bold;
       border-radius: 8px;
       cursor: pointer;
-      transition: background 0.3s ease;
     }
 
-    button:hover {
-      background-color: #0056b3;
+    .results {
+      margin-top: 30px;
+      background: #f1f1f1;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    .result-item {
+      margin-bottom: 10px;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-  <h2>Thẩm Định Chỉ Số Giảm Cân</h2>
   <div class="form-container">
+    <h2>Thẩm Định Chỉ Số Giảm Cân</h2>
+
     <div class="form-group">
-      <label for="height">Chiều cao (cm):</label>
+      <label>Chiều cao (cm):</label>
       <input type="number" id="height" value="158" />
     </div>
     <div class="form-group">
-      <label for="weight">Cân nặng hiện tại (kg):</label>
+      <label>Cân nặng hiện tại (kg):</label>
       <input type="number" id="weight" value="63" />
     </div>
     <div class="form-group">
-      <label for="waist2">Số đo vòng 2 (cm):</label>
+      <label>Số đo vòng 2 (cm):</label>
       <input type="number" id="waist2" value="87" />
     </div>
     <div class="form-group">
-      <label for="waist">Số đo vòng eo (cm):</label>
+      <label>Số đo vòng eo (cm):</label>
       <input type="number" id="waist" value="93" />
     </div>
     <div class="form-group">
-      <label for="hip">Số đo vòng hông (cm):</label>
+      <label>Số đo vòng hông (cm):</label>
       <input type="number" id="hip" value="106" />
     </div>
     <div class="form-group">
-      <label for="target">Mục tiêu giảm (kg):</label>
+      <label>Mục tiêu giảm (kg):</label>
       <input type="number" id="target" value="10" />
     </div>
+
+    <button onclick="renderResults()">💡 Xem kết quả</button>
+
+    <div class="results" id="results" style="display:none;"></div>
+
     <button onclick="generateExcel()">📥 Tải Excel</button>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
+    function renderResults() {
+      const h = +document.getElementById('height').value;
+      const w = +document.getElementById('weight').value;
+      const w2 = +document.getElementById('waist2').value;
+      const waist = +document.getElementById('waist').value;
+      const hip = +document.getElementById('hip').value;
+      const target = +document.getElementById('target').value;
+
+      const bmi = +(w / ((h / 100) ** 2)).toFixed(1);
+      const bmiStatus = bmi >= 25 ? "Thừa cân" : "Bình thường";
+
+      const idealWeight = +((h - 100) * 0.9).toFixed(1);
+
+      const whr = +(waist / hip).toFixed(2);
+      const whrStatus = whr >= 0.85 ? "Nguy cơ bệnh mãn tính cao" : "Bình thường";
+
+      let feasibility = "";
+      if (target <= 0) feasibility = "Không cần giảm";
+      else if (target <= 10) feasibility = "Có thể được nếu sẵn sàng nỗ lực";
+      else feasibility = "Khó khả thi";
+
+      const estimatedWeeks = Math.round(target / 0.5);
+
+      document.getElementById("results").style.display = "block";
+      document.getElementById("results").innerHTML = `
+        <div class="result-item"><strong>BMI:</strong> ${bmi} ~ ${bmiStatus}</div>
+        <div class="result-item"><strong>Cân nặng lý tưởng:</strong> ${idealWeight} kg</div>
+        <div class="result-item"><strong>WHR:</strong> Tỉ lệ: ${whr} ~ ${whrStatus}</div>
+        <div class="result-item"><strong>Tính khả thi:</strong> ${feasibility}</div>
+        <div class="result-item"><strong>Tốc độ giảm khả thi:</strong> Từ 0.32kg đến 0.95kg một tuần</div>
+        <div class="result-item"><strong>Lộ trình dự kiến:</strong> ${estimatedWeeks} tuần để đạt mục tiêu (tốc độ ~0.5kg/tuần)</div>
+      `;
+    }
+
     function generateExcel() {
       const height = +document.getElementById('height').value;
       const weight = +document.getElementById('weight').value;
@@ -123,7 +166,6 @@
       const ws = XLSX.utils.aoa_to_sheet(wsData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Thẩm định');
-
       XLSX.writeFile(wb, 'Bang_Tham_Dinh_Giam_Can.xlsx');
     }
   </script>
